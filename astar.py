@@ -3,7 +3,7 @@ from graphics import *
 import math
 
 # declare size of grid
-row = 10 
+row = 10
 col = 10
 grid = [] # declare grid that will contain an instance of Spot in each position
 
@@ -12,7 +12,9 @@ openSet = []
 closedSet = []
 
 path = [] # declare best path
-walls = [[5,5],[5,4],[4,5],[5,3],[5,2],[4,2],[3,2],[2,2]] # coordinates of obstacles
+walls = [] # coordinates of obstacles
+
+doneWalls = False
 
 # Grid passes the amount of rows and columns and creates a 2D array and draws nonwalls white and walls black
 def Grid(rows,cols):
@@ -20,10 +22,11 @@ def Grid(rows,cols):
 		grid.append([])
 		for j in range(cols):
 			grid[i].append(Spot(i,j)) # create an instance of Spot for position in grid
-			if grid[i][j].wall:
-				grid[i][j].draw("black")
-			else:
-				grid[i][j].draw("white")
+			grid[i][j].draw("white")
+			#if grid[i][j].wall:
+			#	grid[i][j].draw("black")
+			#else:
+			#	grid[i][j].draw("white")
 
 # The Spot class associates the A* function of f=g(cost)+h(heuristic) with each spot on the grid
 class Spot():
@@ -33,15 +36,17 @@ class Spot():
 		self.f = 0
 		self.g = 0
 		self.h = 0
-		self.previous = None 
-		if [self.x,self.y] in walls:
-			self.wall = True
-		else:
-			self.wall = False
+		self.previous = None
+		self.wall = False
 	def draw(self,color):
 		rectangle = Rectangle(Point(self.x*40,self.y*40),Point((self.x*40)+39,(self.y*40)+39))
 		rectangle.setFill(color)
 		rectangle.draw(win)
+	#def updateWalls(self):
+	#	if [self.x, self.y] in walls:
+	#		self.wall = True
+	#	else:
+	#		self.wall = False
 
 # heuristic function using eucledian distance
 def distbetween(start,end):
@@ -50,6 +55,16 @@ def distbetween(start,end):
 win = GraphWin("A* Simulation",400,400) # open GUI window
 
 Grid(row,col) # create grid
+
+# draw walls loop
+while not doneWalls:
+	mouseClick = win.checkMouse()
+	if mouseClick:
+		#walls.append([math.floor(mouseClick.x/40),math.floor(mouseClick.y/40)])
+		grid[int(math.floor(mouseClick.x/40))][int(math.floor(mouseClick.y/40))].wall = True
+		grid[int(math.floor(mouseClick.x/40))][int(math.floor(mouseClick.y/40))].draw("black")
+	if win.checkKey():
+		doneWalls = True
 
 # declare start and end points
 start = grid[0][0]
@@ -61,7 +76,7 @@ openSet.append(start) # first node is added to open set
 dirs = [[-1,0],[1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]
 current = openSet[0] # current node being evaluated is the start node
 
-# draw open set(start node) 
+# draw open set(start node)
 for i in openSet:
 	i.draw("green")
 
@@ -102,11 +117,11 @@ while len(openSet) != 0:
 				neighbors.append(grid[neighborX][neighborY]) # add spot to neighbor array
 
 	for neighbor in neighbors: # for every neighbor
-		tempg = current.g + 1 
+		tempg = current.g + 1
 		if neighbor in openSet: # if neighbor already has a g value
 			if tempg < neighbor.g: # if new g value is better than old g value
 				neighbor.g = tempg # new g value becomes neighbor's g value
-				neighbor.previous = current 
+				neighbor.previous = current
 		else: # if neightbor has not been evaluated
 			neighbor.previous = current
 			neighbor.g = tempg
@@ -121,6 +136,3 @@ while len(openSet) != 0:
 		i.draw("red")
 
 win.getMouse() # close window on mouse click
-
-
-
